@@ -5,4 +5,6 @@ use isbn_register::book::Book;
 
 use std::vec::Vec;
 
-fn main() {}
+fn main() {
+    book::lookup_google("9780702055560");
+}
