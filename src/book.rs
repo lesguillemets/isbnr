@@ -62,21 +62,41 @@ pub enum ISBNError {
 impl FromStr for ISBN {
     type Err = ISBNError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut isbn = String::from("");
-        for c in s.chars() {
-            if c == '-' {
-                continue;
-            } else if c.is_digit(10) {
-                let x = 3;
-                isbn.push(c);
-            } else {
+        // skip hyphens
+        let isbn: String = s.chars().filter(|&c| c != '-').collect();
+        // any invalid character? (can't use Iterator::any because I want the character)
+        for c in (&isbn).chars() {
+            if !c.is_digit(10) {
                 return Err(ISBNError::CharsetNotValid { c });
             }
         }
         let digits = (&isbn).chars().count();
-        if digits != 10 && digits != 13 {
-            return Err(ISBNError::FormNotValid);
+        if digits == 10 {
+            let check: u32 = (&isbn)
+                .chars()
+                .map(|c| c.to_digit(10).unwrap())
+                .enumerate()
+                .map(|(i, n)| (10 - i as u32) * n)
+                .sum();
+            if check % 11 == 0 {
+                Ok(ISBN(isbn))
+            } else {
+                Err(ISBNError::CheckDigitNotValid)
+            }
+        } else if digits == 13 {
+            let check: u32 = (&isbn)
+                .chars()
+                .map(|c| c.to_digit(10).unwrap())
+                .enumerate()
+                .map(|(i, n)| if i % 2 == 0 { n } else { 3 * n })
+                .sum();
+            if check % 10 == 0 {
+                Ok(ISBN(isbn))
+            } else {
+                Err(ISBNError::CheckDigitNotValid)
+            }
+        } else {
+            Err(ISBNError::FormNotValid)
         }
-        Ok(ISBN(isbn))
     }
 }
