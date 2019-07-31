@@ -1,4 +1,4 @@
-use isbn_register::book::{ISBNError, ISBN};
+use isbn_register::isbn::{ISBNError, ISBN};
 use std::str::FromStr;
 
 #[test]
