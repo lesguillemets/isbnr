@@ -52,6 +52,12 @@ pub fn lookup_google(isbn: &str) -> Option<Book> {
 #[derive(Debug)]
 pub struct ISBN(String);
 
+impl ISBN {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 #[derive(Debug)]
 pub enum ISBNError {
     CheckDigitNotValid,
