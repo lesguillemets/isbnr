@@ -49,7 +49,7 @@ pub fn lookup_google(isbn: &str) -> Option<Book> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct ISBN(String);
 
 impl ISBN {
@@ -58,7 +58,7 @@ impl ISBN {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum ISBNError {
     CheckDigitNotValid,
     FormNotValid,
