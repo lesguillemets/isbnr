@@ -6,5 +6,6 @@ use isbn_register::book::Book;
 use std::vec::Vec;
 
 fn main() {
-    book::lookup_google("9780702055560");
+    let book = book::lookup_google("9780702055560");
+    println!("{:?}", book);
 }

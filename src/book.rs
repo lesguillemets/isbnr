@@ -4,15 +4,15 @@ extern crate serde_json;
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
-pub struct Book<'a> {
-    title: &'a str,
-    author: Vec<String>,
-    publisher: &'a str,
-    edition: &'a str,
+pub struct Book {
+    title: String,
+    authors: Vec<String>,
+    publisher: String,
+    edition: String,
     volume: Option<u16>,
     year: Option<u16>,
     month: Option<u8>,
-    isbn: &'a str,
+    isbn: String,
 }
 
 pub fn lookup_google(isbn: &str) -> Option<Book> {
@@ -24,16 +24,24 @@ pub fn lookup_google(isbn: &str) -> Option<Book> {
     let result: serde_json::Value = serde_json::from_str(&response.text().unwrap()).unwrap();
     if result["totalItems"].as_u64() == Some(1) {
         let thisbook = &result["items"][0];
-        let title = String::from(thisbook["title"].as_str().unwrap());
+        let volume_info = &thisbook["volumeInfo"];
+        let title = String::from(volume_info["title"].as_str().unwrap());
+        let publisher = String::from(volume_info["publisher"].as_str().unwrap());
+        let authors: Vec<String> = volume_info["authors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|e| String::from(e.as_str().unwrap()))
+            .collect();
         let book = Book {
-            title: &title,
-            author: vec![],
-            publisher: &(String::from(thisbook["publisher"].as_str().unwrap())),
-            edition: "",
+            title,
+            authors,
+            publisher,
+            edition: String::from(""),
             volume: None,
             year: None,
             month: None,
-            isbn: "",
+            isbn: String::from(""),
         };
         Some(book)
     } else {
