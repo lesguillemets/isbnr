@@ -17,8 +17,8 @@ pub struct Book {
     isbn: ISBN,
 }
 
-fn unwrap_field_as_String(v: &serde_json::Value, field: &str) -> String {
-    String::from(v[field].as_str().unwrap())
+fn field_as_String_ok(v: &serde_json::Value, field: &str) -> Option<String> {
+    v[field].as_str().map(String::from)
 }
 
 pub fn lookup_google(isbn: &ISBN) -> Option<Book> {
@@ -31,16 +31,17 @@ pub fn lookup_google(isbn: &ISBN) -> Option<Book> {
     if result["totalItems"].as_u64() == Some(1) {
         let thisbook = &result["items"][0];
         let volume_info = &thisbook["volumeInfo"];
-        let title = unwrap_field_as_String(&volume_info, "title");
-        let subtitle = unwrap_field_as_String(&volume_info, "subtitle");
-        let publisher = unwrap_field_as_String(&volume_info, "publisher");
-        let published = unwrap_field_as_String(&volume_info, "publishedDate");
+        let title = field_as_String_ok(&volume_info, "title")?;
+        let subtitle = field_as_String_ok(&volume_info, "subtitle")?;
+        let publisher = field_as_String_ok(&volume_info, "publisher")?;
+        let published = field_as_String_ok(&volume_info, "publishedDate")?;
         let (year, month) = parse_hyphen_date(&published);
         let authors: Vec<String> = volume_info["authors"]
+            // errors can be ignored here
             .as_array()
             .unwrap()
             .iter()
-            .map(|e| String::from(e.as_str().unwrap()))
+            .flat_map(|e| (e.as_str().map(String::from)))
             .collect();
         let book = Book {
             title,
