@@ -4,22 +4,25 @@ extern crate serde_json;
 
 use crate::book::Book;
 use crate::isbn::ISBN;
+use crate::lookup::LookupError;
 
 fn field_as_String_ok(v: &serde_json::Value, field: &str) -> Option<String> {
     v[field].as_str().map(String::from)
 }
 
-pub fn lookup_google(isbn: &ISBN) -> Option<Book> {
+pub fn lookup_google(isbn: &ISBN) -> Result<Book, LookupError> {
     let url = format!(
         "https://www.googleapis.com/books/v1/volumes?q=isbn:{}",
         isbn.as_str()
     );
     let mut response = reqwest::get(&url).unwrap();
     let result: serde_json::Value = serde_json::from_str(&response.text().unwrap()).unwrap();
-    if result["totalItems"].as_u64() == Some(1) {
+    let totalItems = result["totalItems"].as_u64().unwrap();
+    if totalItems == 1 {
         let thisbook = &result["items"][0];
         let volume_info = &thisbook["volumeInfo"];
-        let title = field_as_String_ok(&volume_info, "title")?;
+        let title =
+            field_as_String_ok(&volume_info, "title").ok_or(LookupError::TitleNotIncluded)?;
         let subtitle =
             field_as_String_ok(&volume_info, "subtitle").unwrap_or_else(|| String::from(""));
         let publisher =
@@ -45,9 +48,11 @@ pub fn lookup_google(isbn: &ISBN) -> Option<Book> {
             month,
             isbn: isbn.clone(),
         };
-        Some(book)
+        Ok(book)
     } else {
-        None
+        Err(LookupError::ResultNotSingle {
+            n: totalItems as usize,
+        })
     }
 }
 
