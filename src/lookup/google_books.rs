@@ -20,9 +20,12 @@ pub fn lookup_google(isbn: &ISBN) -> Option<Book> {
         let thisbook = &result["items"][0];
         let volume_info = &thisbook["volumeInfo"];
         let title = field_as_String_ok(&volume_info, "title")?;
-        let subtitle = field_as_String_ok(&volume_info, "subtitle")?;
-        let publisher = field_as_String_ok(&volume_info, "publisher")?;
-        let published = field_as_String_ok(&volume_info, "publishedDate")?;
+        let subtitle =
+            field_as_String_ok(&volume_info, "subtitle").unwrap_or_else(|| String::from(""));
+        let publisher =
+            field_as_String_ok(&volume_info, "publisher").unwrap_or_else(|| String::from(""));
+        let published =
+            field_as_String_ok(&volume_info, "publishedDate").unwrap_or_else(|| String::from(""));
         let (year, month) = parse_hyphen_date(&published);
         let authors: Vec<String> = volume_info["authors"]
             // errors can be ignored here
