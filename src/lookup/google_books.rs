@@ -15,7 +15,7 @@ pub fn lookup_google(isbn: &ISBN) -> Result<Book, LookupError> {
         "https://www.googleapis.com/books/v1/volumes?q=isbn:{}",
         isbn.as_str()
     );
-    let mut response = reqwest::get(&url).unwrap();
+    let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
     let result: serde_json::Value = serde_json::from_str(&response.text().unwrap()).unwrap();
     let totalItems = result["totalItems"].as_u64().unwrap();
     if totalItems == 1 {

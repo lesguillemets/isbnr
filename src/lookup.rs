@@ -5,4 +5,5 @@ pub mod ndl_search;
 pub enum LookupError {
     ResultNotSingle { n: usize },
     TitleNotIncluded,
+    NetworkIssues,
 }

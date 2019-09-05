@@ -10,7 +10,7 @@ pub fn lookup_ndl_search(isbn: &ISBN) -> Result<Book, LookupError> {
         "http://iss.ndl.go.jp/api/sru?operation=searchRetrieve&query=isbn={}",
         isbn.as_str()
     );
-    let mut response = reqwest::get(&url).unwrap();
+    let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
     let text = response.text().unwrap();
     let result = roxmltree::Document::parse(&text).unwrap();
     for node in result
