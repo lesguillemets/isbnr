@@ -13,15 +13,15 @@ pub fn lookup_ndl_search(isbn: &ISBN) -> Result<Book, LookupError> {
     let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
     let text = response.text().unwrap();
     let result = roxmltree::Document::parse(&text).unwrap();
+    let mut entries: Vec<Book> = vec![];
     for node in result
         .descendants()
         .filter(|n| n.tag_name().name() == "recordData")
+        .map(|n| roxmltree::Document::parse(n.text().unwrap_or("")))
+        .filter(|info| info.is_ok())
     {
-        let record_text = node.text();
-        println!(
-            "-->\n{:?}",
-            roxmltree::Document::parse(&record_text.unwrap_or(""))
-        );
+        let mut b = Book::empty_from_isbn(isbn);
+        println!("-->\n{:?}", node);
     }
     Err(LookupError::TitleNotIncluded)
 }

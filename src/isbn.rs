@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
-
 pub struct ISBN(String);
 
 impl ISBN {

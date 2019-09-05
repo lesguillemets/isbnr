@@ -12,3 +12,19 @@ pub struct Book {
     pub month: Option<u8>,
     pub isbn: ISBN,
 }
+
+impl Book {
+    pub fn empty_from_isbn(isbn: &ISBN) -> Self {
+        Book {
+            title: String::from(""),
+            subtitle: String::from(""),
+            authors: vec![],
+            publisher: String::from(""),
+            edition: String::from(""),
+            volume: None,
+            year: None,
+            month: None,
+            isbn: (*isbn).clone(),
+        }
+    }
+}
