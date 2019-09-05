@@ -11,4 +11,6 @@ fn main() {
     let isbn = ISBN::from_str("978-4-00-080131-7").unwrap();
     let book = lookup::google_books::lookup_google(&isbn);
     println!("{:?}", book);
+    let book = lookup::ndl_search::lookup_ndl_search(&isbn);
+    println!("{:?}", book);
 }
