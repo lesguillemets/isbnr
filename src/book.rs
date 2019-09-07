@@ -37,7 +37,9 @@ impl Book {
             Some(Book {
                 title: f(&self.title, &other.title),
                 subtitle: f(&self.subtitle, &other.subtitle),
-                authors: if self.authors.len() <= other.authors.len() {
+                // for authors, prefer the longer list
+                // (if same, entry from self is used)
+                authors: if self.authors.len() >= other.authors.len() {
                     self.authors.clone()
                 } else {
                     other.authors.clone()
@@ -73,9 +75,9 @@ fn f<'a>(a: &'a str, b: &'a str) -> String {
 }
 
 fn max_by_length<'a>(a: &'a str, b: &'a str) -> &'a str {
-    if a.chars().count() <= b.chars().count() {
-        b
-    } else {
+    if a.chars().count() >= b.chars().count() {
         a
+    } else {
+        b
     }
 }
