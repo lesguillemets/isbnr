@@ -9,6 +9,19 @@ fn field_as_String_ok(v: &serde_json::Value, field: &str) -> Option<String> {
     v[field].as_str().map(String::from)
 }
 
+trait AsString {
+    fn as_string(&self) -> Option<String>;
+    fn as_string_or_empty(&self) -> String {
+        (self.as_string().unwrap_or_else(|| String::from("")))
+    }
+}
+
+impl AsString for serde_json::Value {
+    fn as_string(&self) -> Option<String> {
+        self.as_str().map(String::from)
+    }
+}
+
 pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
     let url = format!("https://api.openbd.jp/v1/get?isbn={}", isbn.as_str());
     let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
@@ -30,5 +43,7 @@ pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
         .as_str()
         .map(String::from)
         .ok_or(LookupError::TitleNotIncluded)?;
+    let subtitle = descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["SubTitle"]
+        .as_string_or_empty();
     Err(LookupError::NetworkIssues)
 }
