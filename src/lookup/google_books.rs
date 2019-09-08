@@ -16,8 +16,9 @@ pub fn lookup_google(isbn: &ISBN) -> Result<Book, LookupError> {
         isbn.as_str()
     );
     let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
-    let result: serde_json::Value = serde_json::from_str(&response.text().unwrap()).unwrap();
-    let totalItems = result["totalItems"].as_u64().unwrap();
+    let result: serde_json::Value =
+        serde_json::from_str(&response.text().expect("g response text")).expect("g parse as json");
+    let totalItems = result["totalItems"].as_u64().expect("g total items as u64");
     if totalItems == 1 {
         let thisbook = &result["items"][0];
         let volume_info = &thisbook["volumeInfo"];
@@ -33,7 +34,7 @@ pub fn lookup_google(isbn: &ISBN) -> Result<Book, LookupError> {
         let authors: Vec<String> = volume_info["authors"]
             // errors can be ignored here
             .as_array()
-            .unwrap()
+            .unwrap_or(&vec![])
             .iter()
             .flat_map(|e| (e.as_str().map(String::from)))
             .collect();
