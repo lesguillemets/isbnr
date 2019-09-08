@@ -34,17 +34,24 @@ pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
     // TODO: consider "collationkey"
     let title = descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["content"]
         .as_str()
-        .map(String::from)
+        .map(|s| String::from(s).normalise_whitespace())
         .ok_or(LookupError::TitleNotIncluded)?;
     let subtitle = descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["SubTitle"]
-        .as_string_or_empty();
+        .as_string_or_empty()
+        .normalise_whitespace();
     let authors: Vec<String> = descriptive_detail["Contributor"]
         .as_array()
         .unwrap_or(&vec![])
         .iter()
-        .map(|n| n["PersonName"]["content"].as_string_or_empty())
+        .map(|n| {
+            n["PersonName"]["content"]
+                .as_string_or_empty()
+                .normalise_whitespace()
+        })
         .collect();
-    let publisher = summary["publisher"].as_string_or_empty();
+    let publisher = summary["publisher"]
+        .as_string_or_empty()
+        .normalise_whitespace();
     let volume = summary["volume"].as_str().and_then(|t| t.parse().ok());
     // FIXME : publishing date has (at least two) different codings.
     // yyyy-mm and yyyymmdd etc.
@@ -59,4 +66,16 @@ pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
         month: None,
         isbn: (*isbn).clone(),
     })
+}
+
+// dirty hack for method chain
+trait NormaliseWhitespace {
+    fn normalise_whitespace(&self) -> String;
+}
+impl NormaliseWhitespace for String {
+    fn normalise_whitespace(&self) -> String {
+        self.chars()
+            .map(|c| if c.is_whitespace() { ' ' } else { c })
+            .collect()
+    }
 }
