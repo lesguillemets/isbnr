@@ -1,6 +1,5 @@
 use crate::isbn::ISBN;
 use std::cmp::Eq;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Book {

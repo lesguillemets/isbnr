@@ -5,10 +5,6 @@ use crate::book::Book;
 use crate::isbn::ISBN;
 use crate::lookup::LookupError;
 
-fn field_as_String_ok(v: &serde_json::Value, field: &str) -> Option<String> {
-    v[field].as_str().map(String::from)
-}
-
 trait AsString {
     fn as_string(&self) -> Option<String>;
     fn as_string_or_empty(&self) -> String {
@@ -33,17 +29,34 @@ pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
     // for now we'll ignore "hanmoto" results
     let onix_info = &book_info["onix"];
     let descriptive_detail = &onix_info["DescriptiveDetail"];
+    let summary = &onix_info["summary"];
     // this is different from what specified by the url (https://openbd.jp/spec/)
     // TODO: consider "collationkey"
-    println!(
-        "{:?}",
-        descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["content"]
-    );
-    let title = &descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["content"]
+    let title = descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["content"]
         .as_str()
         .map(String::from)
         .ok_or(LookupError::TitleNotIncluded)?;
     let subtitle = descriptive_detail["TitleDetail"]["TitleElement"]["TitleText"]["SubTitle"]
         .as_string_or_empty();
-    Err(LookupError::NetworkIssues)
+    let authors: Vec<String> = descriptive_detail["Contributor"]
+        .as_array()
+        .unwrap_or(&vec![])
+        .iter()
+        .map(|n| n["PersonName"]["content"].as_string_or_empty())
+        .collect();
+    let publisher = summary["publisher"].as_string_or_empty();
+    let volume = summary["volume"].as_str().and_then(|t| t.parse().ok());
+    // FIXME : publishing date has (at least two) different codings.
+    // yyyy-mm and yyyymmdd etc.
+    Ok(Book {
+        title,
+        subtitle,
+        authors,
+        publisher,
+        edition: String::from(""),
+        volume,
+        year: None,
+        month: None,
+        isbn: (*isbn).clone(),
+    })
 }
