@@ -19,15 +19,20 @@ pub enum ISBNError {
 impl FromStr for ISBN {
     type Err = ISBNError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // skip hyphens
-        let isbn: String = s.chars().filter(|&c| c != '-').collect();
-        // any invalid character? (can't use Iterator::any because I want the character)
+        // skip hyphens and whitespaces
+        let isbn: String = s
+            .chars()
+            .filter(|&c| c != '-' && !c.is_whitespace())
+            .collect();
+        let mut digits = 0;
         for c in (&isbn).chars() {
             if !c.is_digit(10) {
+                // any invalid character? (can't use Iterator::any because I want the character)
                 return Err(ISBNError::CharsetNotValid { c });
+            } else {
+                digits += 1;
             }
         }
-        let digits = (&isbn).chars().count();
         // check digits for 10
         if digits == 10 {
             let check: u32 = (&isbn)
