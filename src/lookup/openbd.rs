@@ -20,7 +20,7 @@ impl AsString for serde_json::Value {
 
 pub fn lookup_openbd(isbn: &ISBN) -> Result<Book, LookupError> {
     let url = format!("https://api.openbd.jp/v1/get?isbn={}", isbn.as_str());
-    let mut response = reqwest::get(&url).or(Err(LookupError::NetworkIssues))?;
+    let mut response = reqwest::blocking::get(&url).or(Err(LookupError::NetworkIssues))?;
     let result: serde_json::Value = serde_json::from_str(&response.text().unwrap()).unwrap();
     let book_info = &result[0];
     if book_info.is_null() {
