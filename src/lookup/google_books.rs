@@ -1,5 +1,5 @@
-extern crate reqwest;
-extern crate serde_json;
+use reqwest;
+use serde_json;
 // use serde_json::{Result, Value};
 
 use crate::book::Book;

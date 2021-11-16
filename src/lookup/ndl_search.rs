@@ -1,5 +1,5 @@
-extern crate reqwest;
-extern crate roxmltree;
+use reqwest;
+use roxmltree;
 
 use crate::book::Book;
 use crate::isbn::ISBN;

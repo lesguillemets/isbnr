@@ -1,5 +1,3 @@
-extern crate reqwest;
-
 use isbn_register::book::Book;
 use isbn_register::isbn::{ISBNError, ISBN};
 use isbn_register::lookup;
